@@ -17,4 +17,5 @@ contextBridge.exposeInMainWorld('pet', {
   reportFrames: (stats) => ipcRenderer.send('pet:frames', stats),
   onState: (fn) => ipcRenderer.on('pet:state', (_e, payload) => fn(payload)),
   onMotion: (fn) => ipcRenderer.on('pet:motion', (_e, payload) => fn(payload)),
+  onPlayClip: (fn) => ipcRenderer.on('pet:play-clip', (_e, name) => fn(name)),
 });

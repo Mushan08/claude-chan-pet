@@ -349,7 +349,7 @@ window.pet.onState(({ state, pose, face, text }) => {
   else if (state === 'success') playClip('love');
   else if (state === 'idle') {
     if (activeClip === 'read' || activeClip === 'love') stopClip();
-  } else stopClip();
+  } else if (state === 'error') stopClip();
   if (state === 'working') view.facing = 1;
   if (state === 'success') {
     view.sy = 1.14; // 拉伸一下（往上蹦），弹簧带回落
@@ -387,6 +387,9 @@ window.pet.onMotion(({ vx, vy, mode, facing }) => {
   }
   kick();
 });
+
+// 右键「动作」菜单：手动点播，不受当前状态限制
+window.pet.onPlayClip((name) => playClip(name));
 
 window.pet.readConfig().then((cfg) => {
   if (cfg && cfg.petHeight) {

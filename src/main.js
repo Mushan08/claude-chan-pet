@@ -476,6 +476,10 @@ function startWhisper() {
 
 function popupMenu() {
   const faces = Array.from({ length: 10 }, (_, i) => i + 1);
+  const clipItem = (label, name) => ({
+    label,
+    click: () => win && !win.isDestroyed() && win.webContents.send('pet:play-clip', name),
+  });
   const template = [
     { label: '碎碎念一句', click: () => whisperNow() },
     {
@@ -484,6 +488,15 @@ function popupMenu() {
         label: `表情 ${n} · ${FACE_LABELS[n - 1] ?? ''}`.trim(),
         click: () => setState(currentState, { face: n, text: null }),
       })),
+    },
+    {
+      label: '动作',
+      submenu: [
+        clipItem('抱玩偶', 'hug'),
+        clipItem('招手', 'wave'),
+        clipItem('比心', 'love'),
+        clipItem('看书', 'read'),
+      ],
     },
     { type: 'separator' },
     {
