@@ -148,7 +148,7 @@ let lastIdleAction = null;
 
 function scheduleIdleAction() {
   if (idleActionTimer) clearTimeout(idleActionTimer);
-  const wait = 5000 + Math.random() * 5000; // 5~10 秒自己来一段
+  const wait = 12000 + Math.random() * 3000; // 12~15 秒自己来一段
   idleActionTimer = setTimeout(() => {
     idleActionTimer = null;
     const ready =
@@ -378,7 +378,8 @@ window.addEventListener('contextmenu', (e) => {
 // ---------------------------------------------------------------- 会话状态
 
 window.pet.onState(({ state, pose, face, text }) => {
-  currentStateName = state;
+  // whisper 只是插一句气泡，不该把「空闲」判定顶掉，否则随机动作会停
+  if (state !== 'whisper') currentStateName = state;
   if (pose && SPRITES[pose]) body.src = SPRITES[pose];
   if (state === 'working') playClip('read', true);
   else if (state === 'thinking') playClip('think');

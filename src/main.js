@@ -407,6 +407,7 @@ function setState(name, extra = {}) {
 function whisperNow() {
   const pool = Array.isArray(cfg.lines) && cfg.lines.length ? cfg.lines : LINES;
   const text = pool[Math.floor(Math.random() * pool.length)];
+  log(`whisper ${text}`);
   if (win && !win.isDestroyed()) {
     win.webContents.send('pet:state', {
       state: 'whisper',
@@ -482,9 +483,19 @@ function startEventTail() {
 }
 
 function startWhisper() {
-  if (whisperTimer) clearInterval(whisperTimer);
+  if (whisperTimer) clearTimeout(whisperTimer);
   if (!cfg.whisper.enabled) return;
-  whisperTimer = setInterval(whisperNow, Math.max(20, cfg.whisper.intervalSec) * 1000);
+  const minSec = Math.max(15, cfg.whisper.minSec ?? cfg.whisper.intervalSec ?? 60);
+  const maxSec = Math.max(minSec, cfg.whisper.maxSec ?? minSec);
+  const arm = () => {
+    // 随机间隔，别像定时闹钟一样准点
+    const wait = (minSec + Math.random() * (maxSec - minSec)) * 1000;
+    whisperTimer = setTimeout(() => {
+      whisperNow();
+      arm();
+    }, wait);
+  };
+  arm();
 }
 
 // ---------------------------------------------------------------- 菜单
