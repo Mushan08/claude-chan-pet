@@ -56,9 +56,9 @@ export const DEFAULTS = {
   },
   whisper: {
     enabled: true,
-    intervalSec: 90,
-    minSec: 60,
-    maxSec: 120,
+    intervalSec: 25,
+    minSec: 20,
+    maxSec: 30,
   },
   // 事件名 → 宠物状态。改这里就能改映射，不用动代码。
   eventStates: {

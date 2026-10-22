@@ -404,15 +404,24 @@ function setState(name, extra = {}) {
   }
 }
 
+let lastWhisperText = null;
+
 function whisperNow() {
   const pool = Array.isArray(cfg.lines) && cfg.lines.length ? cfg.lines : LINES;
-  const text = pool[Math.floor(Math.random() * pool.length)];
-  log(`whisper ${text}`);
+  let text = pool[Math.floor(Math.random() * pool.length)];
+  // 连着念同一句很出戏，最多重抽 5 次
+  for (let i = 0; i < 5 && pool.length > 1 && text === lastWhisperText; i++) {
+    text = pool[Math.floor(Math.random() * pool.length)];
+  }
+  lastWhisperText = text;
+  // 表情也随机：每次碎碎念随机挑一张胸像，不再固定 10 号
+  const face = 1 + Math.floor(Math.random() * 10);
+  log(`whisper face=${face} ${text}`);
   if (win && !win.isDestroyed()) {
     win.webContents.send('pet:state', {
       state: 'whisper',
       pose: 'front',
-      face: cfg.stateFaces.whisper ?? null,
+      face,
       text,
       transient: true,
     });
