@@ -1,0 +1,54 @@
+# HANDOFF · claude-chan-pet
+
+> 写于 2026-10-22 20:40。上一会话的 transcript 已到 44.5 MB（79 张截图，base64 共 32.3 MB），
+> 超过网关 16 MB 的 request body 上限，任何新消息都会被 400 拒掉。这份文件用来接续。
+
+## 新会话开场（直接粘贴）
+
+```
+接着做 claude-chan-pet，workspace 是 E:\cc_workplace。
+先读 E:\cc_workplace\claude-chan-pet\HANDOFF.md、README.md、docs/design.md，再看 src/main.js。
+不要重新读设计稿大图，需要视觉确认就自己跑 --selftest 出图后报路径。
+```
+
+## 项目是什么
+
+Claude 娘 Electron 透明桌宠，接 Claude Code hooks（事件 -> 表情/气泡）。
+素材来自用户给的三视图设计稿，已用 `scripts/make-sprites.py` 裁切+边缘洪水填充去底，产物在 `assets/pet/`。
+
+## 现状（已落盘、已验证）
+
+| 项 | 状态 |
+| --- | --- |
+| `src/main.js`（673 行，约 22 KB） | 最后改动 20:37 |
+| 帧率 | p50 5.6 ms / p95 5.6 ms，>32 ms 0 帧（启动首帧 85 ms 属加载） |
+| 窗口 | 280×344，贴任务栏上沿；`will-resize` 直接拒绝；`setMaximumSize` 先放开再 `setBounds` |
+| 自检 | `out/selftest-idle.png`、`out/selftest-state.png` 已生成 |
+| Hooks | 已写入 `E:\cc_workplace\.claude\settings.json`，覆盖 9 个事件 |
+| 运行 | `pwsh -NoProfile -File scripts/run.ps1`；自检加 `--selftest` |
+
+## 未完成 / 待确认
+
+1. **窗口仍会被放大**：`will-resize` 不触发、日志里也没拦住，判断是更底层在改尺寸；已做的纠正让位移不可见，但根因没钉死。
+2. 用户新发的设计稿设定图没进会话（发送时就被 400 挡了），需要重发——**缩到 1280 宽再发**。
+3. 视觉验收：纠正后「宠物站位不动、放大只多一圈透明像素」是否符合预期，还没看过。
+
+## 这个会话踩的坑（避免复发）
+
+- 每轮贴 2560×1600 全屏截图 ≈ 0.6 MB base64，79 张就 32 MB。**先缩图或只给文件路径**。
+- 长会话每 30~50 轮换新会话，换之前写一份 HANDOFF。
+- 400 `Exceeded limit on max bytes to request body: 16777216` 是**字节数**超限，不是 token 超限（当时上下文才 36%）。
+
+## 2026-10-22 22:55 接管记录（Codex）
+
+- **拖不动的根因**：21:5x 的重构把 `pet.js` 里的 `kick()` / `frame()` / `probeFrames()` 整段删掉，
+  但所有调用点都留着。`mousedown` 里 `kick()` 先抛 `kick is not defined`，
+  后面的 `window.pet.dragStart()` 永远执行不到 → 主进程只能从 `drag-move` 反推，手感全毁。
+- **修复**：补回弹簧积分 + 逐帧循环 + 帧率探针（没有恢复已删除的 `<video>` 片段层），
+  并把 `dragStart()` 挪到 `kick()` 之前——以后动画再炸也不影响拖动。
+- **验证**：`pet.log` 中 `drag-start` 不再带 `(inferred)`，拖拽 / 甩抛 / 落地回弹正常；
+  `--selftest` 正常出图；`mousedown ERROR` 归零。
+- **仍未解决**：窗口会被外部放大（日志里 412x454、429x474 等），`ensureWindowSize` 每 8 秒拉回一次；
+  Electron 的 `resized` 事件不触发，根因未钉死。
+- **新素材**：5 段 960x720 / 4s 的动作参考（抱玩偶、招手、喝茶、比心、读书），
+  背景是近白 `#F4F6F6`，和裙子奶白撞色，不适合直接 colorkey 抠成透明本体。

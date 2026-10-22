@@ -1,0 +1,15 @@
+{
+  "name": "claude-chan-pet",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Claude 娘桌宠：一只住在桌面上的橙发大小姐，跟着 Claude Code 的会话状态做表情、碎碎念。模仿 dsh-pet 的三外壳思路，本项目为 Electron 单外壳。",
+  "type": "module",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "start:ps": "pwsh -NoProfile -File scripts/run.ps1",
+    "sprites": "python -I scripts/make-sprites.py assets/source/sheet-threeview.png assets/pet",
+    "analyze": "python -I scripts/analyze-sheet.py assets/source/sheet-threeview.png"
+  },
+  "license": "MIT"
+}

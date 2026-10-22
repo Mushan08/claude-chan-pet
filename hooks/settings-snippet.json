@@ -1,0 +1,68 @@
+{
+  "_comment": [
+    "把这段合并进 .claude/settings.json（项目级或用户级），Claude Code 的会话事件就会喂给桌宠。",
+    "路径按需改成你自己的绝对路径；Windows 下用正斜杠或转义反斜杠都行。",
+    "合并不用开终端：让 Claude Code 自己改设置也可以（说一句'把 hooks 加上'）。",
+    "hooks 只写文件、永远 exit 0，不会影响会话本身。"
+  ],
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node \"E:/cc_workplace/claude-chan-pet/hooks/claude-chan-pet-hook.mjs\"" }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node \"E:/cc_workplace/claude-chan-pet/hooks/claude-chan-pet-hook.mjs\"" }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          { "type": "command", "command": "node \"E:/cc_workplace/claude-chan-pet/hooks/claude-chan-pet-hook.mjs\"" }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          { "type": "command", "command": "node \"E:/cc_workplace/claude-chan-pet/hooks/claude-chan-pet-hook.mjs\"" }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node \"E:/cc_workplace/claude-chan-pet/hooks/claude-chan-pet-hook.mjs\"" }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node \"E:/cc_workplace/claude-chan-pet/hooks/claude-chan-pet-hook.mjs\"" }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node \"E:/cc_workplace/claude-chan-pet/hooks/claude-chan-pet-hook.mjs\"" }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node \"E:/cc_workplace/claude-chan-pet/hooks/claude-chan-pet-hook.mjs\"" }
+        ]
+      }
+    ]
+  }
+}

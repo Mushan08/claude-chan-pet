@@ -1,0 +1,138 @@
+/* Claude 娘桌宠 · 渲染层样式
+   配色直接取设计稿：奶白纸底 #F6F3ED、橙铜 #C8703C、墨黑 #2B2724。
+   透明窗口里除了立绘和气泡，一切都是透明的。 */
+
+:root {
+  --paper: #f6f3ed;
+  --ink: #2b2724;
+  --copper: #c8703c;
+  --copper-soft: #e0a179;
+  --pet-h: 233px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: transparent;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-drag: none;
+  cursor: default;
+  font-family: 'Microsoft YaHei', 'PingFang SC', system-ui, sans-serif;
+}
+
+#stage {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* ---------- 立绘 ---------- */
+
+/* 呼吸交给 CSS 动画：跑在合成器线程上，空闲时不占用主线程，比 JS 每帧写 transform 顺得多 */
+#pet {
+  display: block;
+  transform-origin: 50% 100%;
+  will-change: transform;
+  animation: breathe 3.6s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+  50% {
+    transform: translateY(-2.4px) scale(0.996, 1.018);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #pet {
+    animation: none;
+  }
+}
+
+#body {
+  display: block;
+  /* 按高度定尺寸：三个视图等高，换姿势只变宽窄，宠物不会忽大忽小 */
+  height: var(--pet-h);
+  width: auto;
+  transform-origin: 50% 100%;
+  will-change: transform;
+  pointer-events: none; /* 命中判定由 JS 按包围盒算，别让透明像素吃事件 */
+  /* 注意：这里曾经有 filter: drop-shadow()。alpha 立绘每帧重算滤镜是掉帧主因，已移除。 */
+}
+
+#stage.dragging #pet {
+  cursor: grabbing;
+}
+
+/* ---------- 气泡 ---------- */
+
+#bubble {
+  position: relative;
+  margin-bottom: 6px;
+  max-width: min(230px, 100%);
+  min-height: 46px;
+  padding: 7px 11px 7px 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--paper);
+  border: 1.5px solid var(--copper-soft);
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(43, 39, 36, 0.16);
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.45;
+  opacity: 1;
+  transition: opacity 0.28s ease, transform 0.28s ease;
+  transform-origin: 50% 100%;
+}
+
+#bubble.hidden {
+  opacity: 0;
+  transform: translateY(6px) scale(0.96);
+  pointer-events: none;
+}
+
+#bubble::after {
+  /* 指向宠物的小尖角 */
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  background: var(--paper);
+  border-right: 1.5px solid var(--copper-soft);
+  border-bottom: 1.5px solid var(--copper-soft);
+  transform: rotate(45deg);
+}
+
+#bubble-face {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  object-fit: cover;
+  border-radius: 9px;
+  background: var(--paper);
+}
+
+#bubble-face[hidden] {
+  display: none;
+}
+
+#bubble-text {
+  flex: 1 1 auto;
+}
