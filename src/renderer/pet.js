@@ -100,6 +100,7 @@ function hideBubble() {
 // 播完就退回立绘；working 这种长状态才循环。
 let clips = {};
 let activeClip = null;
+let currentStateName = 'idle';
 
 function playClip(name, loop = false) {
   const info = clips && clips[name];
@@ -117,6 +118,7 @@ function playClip(name, loop = false) {
   } catch {
     /* 还没加载完时忽略 */
   }
+  window.pet.reportFrames({ label: `clip-start ${name} loop=${loop}`, frames: 0, p50: 0, p95: 0, worst: 0, over32: 0 });
   animEl.play().catch(() => stopClip()); // 片段坏了就退回立绘，别让宠物消失
   kick();
   return true;
@@ -124,6 +126,7 @@ function playClip(name, loop = false) {
 
 function stopClip() {
   if (!activeClip) return;
+  window.pet.reportFrames({ label: `clip-stop ${activeClip}`, frames: 0, p50: 0, p95: 0, worst: 0, over32: 0 });
   activeClip = null;
   petEl.classList.remove('clip');
   animEl.pause();
@@ -132,6 +135,33 @@ function stopClip() {
 animEl.addEventListener('ended', () => {
   if (!animEl.loop) stopClip();
 });
+animEl.addEventListener('error', () => {
+  window.pet.reportFrames({ label: `clip-error ${activeClip}`, frames: 0, p50: 0, p95: 0, worst: 0, over32: 0 });
+  stopClip();
+});
+
+// 空闲时自己随机来一段动作，不用右键点。
+// 只在 idle + 没有片段在播 + 没有拖拽时触发，免得把工作状态的动作顶掉。
+const IDLE_ACTIONS = ['hug', 'wave', 'love', 'read', 'think'];
+let idleActionTimer = null;
+
+function scheduleIdleAction() {
+  if (idleActionTimer) clearTimeout(idleActionTimer);
+  const wait = 25000 + Math.random() * 45000; // 25~70 秒一次
+  idleActionTimer = setTimeout(() => {
+    idleActionTimer = null;
+    const ready =
+      !view.dragging &&
+      !activeClip &&
+      currentStateName === 'idle' &&
+      Object.keys(clips).length > 0;
+    if (ready) {
+      const name = IDLE_ACTIONS[Math.floor(Math.random() * IDLE_ACTIONS.length)];
+      playClip(name);
+    }
+    scheduleIdleAction();
+  }, wait);
+}
 
 // ---------------------------------------------------------------- 形变循环
 
@@ -270,7 +300,6 @@ function onPetClick() {
   view.sy = 0.6;
   view.syV = 0;
   kick();
-  playClip('wave'); // 点一下先招手；片段不存在时静默跳过
   const faces = [1, 2, 3];
   const face = faces[Math.floor(Math.random() * faces.length)];
   const line = CLICK_LINES[Math.floor(Math.random() * CLICK_LINES.length)];
@@ -300,6 +329,8 @@ window.addEventListener('mousemove', (e) => {
 
 window.addEventListener('mousedown', (e) => {
   if (e.button !== 0 || !insidePet(e)) return;
+  // 手动碰她 = 退出当前动作，回到立绘（捏一下），不在这里播片段
+  stopClip();
   // 套 try/catch：之前这里抛过异常，导致 dragStart 永远发不出去、拖动整个失效，
   // 而异常原文只出现在 devtools 里看不到。写进日志，根因就自己浮现了。
   try {
@@ -344,6 +375,7 @@ window.addEventListener('contextmenu', (e) => {
 // ---------------------------------------------------------------- 会话状态
 
 window.pet.onState(({ state, pose, face, text }) => {
+  currentStateName = state;
   if (pose && SPRITES[pose]) body.src = SPRITES[pose];
   if (state === 'working') playClip('read', true);
   else if (state === 'thinking') playClip('think');
@@ -397,5 +429,6 @@ window.pet.readConfig().then((cfg) => {
     document.documentElement.style.setProperty('--pet-h', `${cfg.petHeight}px`);
   }
   clips = (cfg && cfg.clips) || {};
+  if (Object.keys(clips).length) scheduleIdleAction();
   probeFrames('idle');
 });
