@@ -1,0 +1,41 @@
+{
+  "clips": {
+    "hug": {
+      "file": "anims/hug.webm",
+      "w": 409,
+      "h": 320,
+      "frames": 97,
+      "fps": 24,
+      "seconds": 4.04,
+      "bytes": 388064
+    },
+    "wave": {
+      "file": "anims/wave.webm",
+      "w": 222,
+      "h": 320,
+      "frames": 97,
+      "fps": 24,
+      "seconds": 4.04,
+      "bytes": 353212
+    },
+    "love": {
+      "file": "anims/love.webm",
+      "w": 286,
+      "h": 320,
+      "frames": 97,
+      "fps": 24,
+      "seconds": 4.04,
+      "bytes": 332946
+    },
+    "read": {
+      "file": "anims/read.webm",
+      "w": 464,
+      "h": 320,
+      "frames": 97,
+      "fps": 24,
+      "seconds": 4.04,
+      "bytes": 324354
+    }
+  },
+  "source": "wechat-2026-10"
+}

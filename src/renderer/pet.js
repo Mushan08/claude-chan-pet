@@ -14,6 +14,7 @@ const facePath = (n) => `../../assets/pet/face-${String(n).padStart(2, '0')}.png
 
 const stage = document.getElementById('stage');
 const petEl = document.getElementById('pet');
+const animEl = document.getElementById('anim');
 const body = document.getElementById('body');
 const bubble = document.getElementById('bubble');
 const bubbleFace = document.getElementById('bubble-face');
@@ -71,8 +72,11 @@ body.addEventListener('load', () => applyMediaSize(body));
 let bubbleTimer = null;
 
 function showBubble(text, face, ms = 10000) {
-  if (!text) return hideBubble();
-  bubbleText.textContent = text;
+  // 只有表情、没有台词也要能显示（右键「换个表情」就是这种）
+  if (!text && !face) return hideBubble();
+  bubbleText.textContent = text || '';
+  bubbleText.hidden = !text;
+  bubble.classList.toggle('face-only', !text);
   if (face) {
     bubbleFace.src = facePath(face);
     bubbleFace.hidden = false;
@@ -89,6 +93,45 @@ function hideBubble() {
   if (bubbleTimer) clearTimeout(bubbleTimer);
   bubbleTimer = null;
 }
+
+// ---------------------------------------------------------------- 动作片段
+
+// 由 scripts/make-emote-clips.py 生成，主进程读 manifest 后经 readConfig 送过来。
+// 播完就退回立绘；working 这种长状态才循环。
+let clips = {};
+let activeClip = null;
+
+function playClip(name, loop = false) {
+  const info = clips && clips[name];
+  if (!info) return false;
+  if (activeClip === name) {
+    if (animEl.paused) animEl.play().catch(() => {});
+    return true;
+  }
+  activeClip = name;
+  petEl.classList.add('clip');
+  animEl.loop = loop;
+  animEl.src = `../../assets/pet/${info.file}`;
+  try {
+    animEl.currentTime = 0;
+  } catch {
+    /* 还没加载完时忽略 */
+  }
+  animEl.play().catch(() => stopClip()); // 片段坏了就退回立绘，别让宠物消失
+  kick();
+  return true;
+}
+
+function stopClip() {
+  if (!activeClip) return;
+  activeClip = null;
+  petEl.classList.remove('clip');
+  animEl.pause();
+}
+
+animEl.addEventListener('ended', () => {
+  if (!animEl.loop) stopClip();
+});
 
 // ---------------------------------------------------------------- 形变循环
 
@@ -227,6 +270,7 @@ function onPetClick() {
   view.sy = 0.6;
   view.syV = 0;
   kick();
+  playClip('wave'); // 点一下先招手；片段不存在时静默跳过
   const faces = [1, 2, 3];
   const face = faces[Math.floor(Math.random() * faces.length)];
   const line = CLICK_LINES[Math.floor(Math.random() * CLICK_LINES.length)];
@@ -301,6 +345,11 @@ window.addEventListener('contextmenu', (e) => {
 
 window.pet.onState(({ state, pose, face, text }) => {
   if (pose && SPRITES[pose]) body.src = SPRITES[pose];
+  if (state === 'working') playClip('read', true);
+  else if (state === 'success') playClip('love');
+  else if (state === 'idle') {
+    if (activeClip === 'read' || activeClip === 'love') stopClip();
+  } else stopClip();
   if (state === 'working') view.facing = 1;
   if (state === 'success') {
     view.sy = 1.14; // 拉伸一下（往上蹦），弹簧带回落
@@ -312,7 +361,11 @@ window.pet.onState(({ state, pose, face, text }) => {
     view.syV = 0;
     kick();
   }
-  if (text) showBubble(text, face, state === 'whisper' ? 8000 : 10000);
+  if (text || face) {
+    // 无台词的纯表情：只停 4 秒，别一直挡着桌面
+    const ms = text ? (state === 'whisper' ? 8000 : 10000) : 4000;
+    showBubble(text, face, ms);
+  }
   else hideBubble();
 });
 
@@ -339,5 +392,6 @@ window.pet.readConfig().then((cfg) => {
   if (cfg && cfg.petHeight) {
     document.documentElement.style.setProperty('--pet-h', `${cfg.petHeight}px`);
   }
+  clips = (cfg && cfg.clips) || {};
   probeFrames('idle');
 });

@@ -52,3 +52,17 @@ Claude 娘 Electron 透明桌宠，接 Claude Code hooks（事件 -> 表情/气�
   Electron 的 `resized` 事件不触发，根因未钉死。
 - **新素材**：5 段 960x720 / 4s 的动作参考（抱玩偶、招手、喝茶、比心、读书），
   背景是近白 `#F4F6F6`，和裙子奶白撞色，不适合直接 colorkey 抠成透明本体。
+
+## 2026-10-22 23:10 第二轮（Codex）
+
+- **「换个表情」没反应**：菜单 `click: () => setState(currentState, { face: n, text: null })`，
+  而 `STATES.idle.texts` 是空数组 → `pickText('idle')` 返回 null → 渲染层 `if (text) showBubble() else hideBubble()`
+  直接把脸丢了。修复：渲染层改成 `if (text || face)`，无台词时显示 64px 的表情小卡（`#bubble.face-only`），停 4 秒。
+  自检新增 `out/selftest-face.png` 做回归。
+- **情绪动作片段**：`scripts/make-emote-clips.py` 把 4 段参考视频逐帧抠像（边缘洪水填充 + 最大连通域 + 1px 腐蚀 + 羽化），
+  编码成 VP9/yuva420p 的透明 WebM，产物在 `assets/pet/anims/`。映射：`working`→read（循环）、
+  `success`→love（一次）、点击→wave（一次），播完 `stopClip()` 退回立绘。
+- **喝茶那段没做**：桌布是白色，和裙子同色，最大连通域会把桌子和人连在一起；硬裁会切到头发。
+  要做只能手绘 mask，暂缓。
+- **注意**：`#anim` 是绝对定位、底边对齐 `#pet`；`#pet.clip #body` 必须用 `visibility:hidden` 而不是 `display:none`，
+  否则 `#pet` 塌成 0 高，气泡会掉到底部压住片段。

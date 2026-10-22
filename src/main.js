@@ -550,6 +550,18 @@ async function runSelfTest() {
 
   await sleep(1600);
   await shot('selftest-state');
+
+  // 右键「换个表情」走的就是这条路：text 为 null、只有 face。
+  // 之前渲染层 `if (text)` 直接 hideBubble，表情永远不出现，所以单独留一张回归图。
+  setState('idle', { face: 1, text: null });
+  await sleep(700);
+  await shot('selftest-face');
+
+  // 动作片段：success 走 love 那段，播到一半截图
+  setState('success', {});
+  await sleep(1200);
+  await shot('selftest-clip');
+
   app.quit();
 }
 
@@ -692,9 +704,20 @@ ipcMain.on('pet:frames', (_e, stats) => {
   );
 });
 ipcMain.handle('pet:whisper', () => whisperNow());
+function loadClips() {
+  // 动作片段由 scripts/make-emote-clips.py 生成，manifest 不存在就当作没有
+  try {
+    const file = path.join(import.meta.dirname, '..', 'assets', 'pet', 'anims', 'manifest.json');
+    return JSON.parse(fs.readFileSync(file, 'utf8')).clips ?? {};
+  } catch {
+    return {};
+  }
+}
+
 ipcMain.handle('pet:config', () => ({
   petHeight: cfg.pet.height,
   whisperEnabled: cfg.whisper.enabled,
+  clips: loadClips(),
 }));
 
 app.whenReady().then(async () => {

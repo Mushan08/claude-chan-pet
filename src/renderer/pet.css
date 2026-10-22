@@ -39,6 +39,7 @@ body {
 
 /* 呼吸交给 CSS 动画：跑在合成器线程上，空闲时不占用主线程，比 JS 每帧写 transform 顺得多 */
 #pet {
+  position: relative;
   display: block;
   transform-origin: 50% 100%;
   will-change: transform;
@@ -70,6 +71,30 @@ body {
   will-change: transform;
   pointer-events: none; /* 命中判定由 JS 按包围盒算，别让透明像素吃事件 */
   /* 注意：这里曾经有 filter: drop-shadow()。alpha 立绘每帧重算滤镜是掉帧主因，已移除。 */
+}
+
+/* 动作片段：和立绘同一个位置、同一条底边，播完就退回立绘 */
+#anim {
+  display: none;
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: calc(100vw - 12px);
+  height: var(--pet-h);
+  object-fit: contain;
+  object-position: bottom center;
+  pointer-events: none;
+}
+
+#pet.clip #anim {
+  display: block;
+}
+
+#pet.clip #body {
+  /* 不能 display:none：#pet 一塌成 0 高，气泡就会掉到底部压住片段。
+     用 visibility 保留占位，立绘和视频才共用同一条底边。 */
+  visibility: hidden;
 }
 
 #stage.dragging #pet {
@@ -131,6 +156,18 @@ body {
 
 #bubble-face[hidden] {
   display: none;
+}
+
+#bubble.face-only {
+  /* 只有表情时收成一张小方卡，别留一条空白给台词 */
+  padding: 8px;
+  gap: 0;
+}
+
+#bubble.face-only #bubble-face {
+  width: 64px;
+  height: 64px;
+  flex: 0 0 64px;
 }
 
 #bubble-text {
