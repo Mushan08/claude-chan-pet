@@ -148,7 +148,7 @@ let lastIdleAction = null;
 
 function scheduleIdleAction() {
   if (idleActionTimer) clearTimeout(idleActionTimer);
-  const wait = 25000 + Math.random() * 45000; // 25~70 秒自己来一段
+  const wait = 5000 + Math.random() * 5000; // 5~10 秒自己来一段
   idleActionTimer = setTimeout(() => {
     idleActionTimer = null;
     const ready =
