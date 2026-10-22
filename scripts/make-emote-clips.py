@@ -22,10 +22,8 @@ import numpy as np
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT_DIR = os.path.join(ROOT, "assets", "pet", "anims")
 FFMPEG = os.environ.get("FFMPEG_EXE", "ffmpeg")
-SRC_DIR = os.environ.get(
-    "EMOTE_SRC_DIR",
-    r"C:\Users\MushanLuo\Documents\xwechat_files\wxid_corpootnioag22_5f33\msg\video\2026-10",
-)
+# Point this at the folder holding the reference mp4s (they are not in the repo).
+SRC_DIR = os.environ.get("EMOTE_SRC_DIR", "")
 
 # name -> source file. "tea" is intentionally absent: its tablecloth is the same
 # cream as the dress, so it cannot be separated without hand-drawn mattes.
@@ -169,9 +167,9 @@ def main():
     manifest = {"clips": {}, "source": "wechat-2026-10"}
     try:
         for name, fn in CLIPS:
-            src = os.path.join(SRC_DIR, fn)
+            src = os.path.join(SRC_DIR, fn) if SRC_DIR else fn
             if not os.path.exists(src):
-                print("missing source:", src)
+                print("missing source:", src, "(set EMOTE_SRC_DIR to the folder with the mp4s)")
                 continue
             info = build(name, src, work)
             manifest["clips"][name] = info
