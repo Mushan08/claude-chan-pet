@@ -70,10 +70,25 @@ function groundY() {
 }
 
 function winSize() {
+  // 窗口宽度还要容得下最宽的动作片段：片段按 petHeight 等比缩放，
+  // 窄窗口会把 1.45:1 的坐姿片段压到 185px 高，看起来像变远了。
   return {
-    w: Math.round(petBox.w + cfg.window.padX * 2),
+    w: Math.max(Math.round(petBox.w + cfg.window.padX * 2), clipMaxWidth() + 12),
     h: Math.round(petBox.h + cfg.window.padTop),
   };
+}
+
+let clipWidthCache = null;
+function clipMaxWidth() {
+  if (clipWidthCache !== null) return clipWidthCache;
+  const clips = loadClips();
+  let ratio = 0;
+  for (const key of Object.keys(clips)) {
+    const c = clips[key];
+    if (c && Number.isFinite(c.h) && c.h > 0) ratio = Math.max(ratio, c.w / c.h);
+  }
+  clipWidthCache = ratio > 0 ? Math.ceil(ratio * cfg.pet.height) : 0;
+  return clipWidthCache;
 }
 
 function lockWindowSize(size) {

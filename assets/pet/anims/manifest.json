@@ -2,48 +2,48 @@
   "clips": {
     "hug": {
       "file": "anims/hug.webm",
-      "w": 409,
-      "h": 320,
+      "w": 449,
+      "h": 560,
       "frames": 97,
       "fps": 24,
       "seconds": 4.04,
-      "bytes": 388064
+      "bytes": 1627470
     },
     "wave": {
       "file": "anims/wave.webm",
-      "w": 222,
-      "h": 320,
+      "w": 390,
+      "h": 560,
       "frames": 97,
       "fps": 24,
       "seconds": 4.04,
-      "bytes": 353212
+      "bytes": 1605168
     },
     "love": {
       "file": "anims/love.webm",
-      "w": 286,
-      "h": 320,
+      "w": 431,
+      "h": 560,
       "frames": 97,
       "fps": 24,
       "seconds": 4.04,
-      "bytes": 332946
+      "bytes": 1472158
     },
     "read": {
       "file": "anims/read.webm",
-      "w": 464,
-      "h": 320,
+      "w": 811,
+      "h": 560,
       "frames": 97,
       "fps": 24,
       "seconds": 4.04,
-      "bytes": 324354
+      "bytes": 1599516
     },
     "think": {
       "file": "anims/think.webm",
-      "w": 421,
-      "h": 320,
+      "w": 736,
+      "h": 560,
       "frames": 97,
       "fps": 24,
       "seconds": 4.04,
-      "bytes": 316327
+      "bytes": 1526291
     }
   },
   "source": "wechat-2026-10"

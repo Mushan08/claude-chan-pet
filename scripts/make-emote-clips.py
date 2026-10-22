@@ -39,8 +39,8 @@ CLIPS = [
 ]
 
 FPS = 24
-TOL = 46
-ENCODE_H = 320
+TOL = 60
+ENCODE_H = 560
 PAD = 8
 
 
@@ -57,10 +57,20 @@ def paper_colour(frame):
 
 
 def cut(frame, bg):
-    """Return (rgba, alpha_mask) with the paper background and stray islands gone."""
+    """Return (rgba, alpha_mask) with the paper background and stray islands gone.
+
+    Paper colour is flood-filled from the border, so pockets that are *connected*
+    to the outside (the gaps between hair strands) leave with the background,
+    while enclosed cream areas (the dress, the plush) stay opaque.
+    """
     h, w = frame.shape[:2]
     dist = np.abs(frame.astype(np.int16) - bg.astype(np.int16)).sum(axis=2)
-    fg = (dist >= TOL).astype(np.uint8)
+
+    free = (dist < TOL).astype(np.uint8) * 255
+    reach = free.copy()
+    scratch = np.zeros((h + 2, w + 2), np.uint8)
+    cv2.floodFill(reach, scratch, (0, 0), 128)
+    fg = np.where(reach == 128, 0, 255).astype(np.uint8)
 
     count, labels, stats, _ = cv2.connectedComponentsWithStats(fg, 8)
     if count <= 1:
@@ -70,15 +80,18 @@ def cut(frame, bg):
 
     # close the small gap a soft outline leaves, then fill interior holes
     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8))
-    flooded = mask.copy()
-    scratch = np.zeros((h + 2, w + 2), np.uint8)
-    cv2.floodFill(flooded, scratch, (0, 0), 255)
-    mask = cv2.bitwise_or(mask, cv2.bitwise_not(flooded))
 
     # hard 0/255 edge reads as stair-steps on a dark desktop: erode 1px + feather
     mask = cv2.erode(mask, np.ones((3, 3), np.uint8), iterations=1)
-    mask = cv2.GaussianBlur(mask, (3, 3), 0.6)
-    return np.dstack([frame, mask]), mask
+    mask = cv2.GaussianBlur(mask, (5, 5), 1.0)
+
+    # despill: semi-transparent edge pixels still carry the cream paper colour.
+    # Undo the mix F = (C - (1-a)B) / a so the rim stops glowing on dark desktops.
+    a = (mask.astype(np.float32) / 255.0)[..., None]
+    rgb = frame.astype(np.float32)
+    unmixed = (rgb - (1.0 - a) * bg.reshape(1, 1, 3)) / np.maximum(a, 0.10)
+    unmixed = np.where(a > 0.02, np.clip(unmixed, 0, 255), rgb)
+    return np.dstack([unmixed, mask]).astype(np.uint8), mask
 
 
 def extract_frames(video, out_dir):
@@ -136,7 +149,7 @@ def build(name, video, work):
     subprocess.run(
         [FFMPEG, "-y", "-hide_banner", "-loglevel", "error",
          "-framerate", str(FPS), "-i", os.path.join(out_frames, "%04d.png"),
-         "-c:v", "libvpx-vp9", "-pix_fmt", "yuva420p", "-b:v", "0", "-crf", "32",
+         "-c:v", "libvpx-vp9", "-pix_fmt", "yuva420p", "-b:v", "0", "-crf", "20",
          "-auto-alt-ref", "0", "-row-mt", "1", target],
         check=True,
     )
