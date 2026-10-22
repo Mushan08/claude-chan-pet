@@ -144,10 +144,11 @@ animEl.addEventListener('error', () => {
 // 只在 idle + 没有片段在播 + 没有拖拽时触发，免得把工作状态的动作顶掉。
 const IDLE_ACTIONS = ['hug', 'wave', 'love', 'read', 'think'];
 let idleActionTimer = null;
+let lastIdleAction = null;
 
 function scheduleIdleAction() {
   if (idleActionTimer) clearTimeout(idleActionTimer);
-  const wait = 25000 + Math.random() * 45000; // 25~70 秒一次
+  const wait = 25000 + Math.random() * 45000; // 25~70 秒自己来一段
   idleActionTimer = setTimeout(() => {
     idleActionTimer = null;
     const ready =
@@ -156,8 +157,10 @@ function scheduleIdleAction() {
       currentStateName === 'idle' &&
       Object.keys(clips).length > 0;
     if (ready) {
-      const name = IDLE_ACTIONS[Math.floor(Math.random() * IDLE_ACTIONS.length)];
-      playClip(name);
+      // 不连着放同一段，否则看起来像卡住了
+      const pool = IDLE_ACTIONS.filter((n) => n !== lastIdleAction);
+      const name = pool[Math.floor(Math.random() * pool.length)];
+      if (playClip(name)) lastIdleAction = name;
     }
     scheduleIdleAction();
   }, wait);

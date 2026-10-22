@@ -75,7 +75,9 @@ body {
 
 /* 动作片段：和立绘同一个位置、同一条底边，播完就退回立绘 */
 #anim {
-  display: none;
+  display: block;
+  visibility: hidden;
+  opacity: 0;
   position: absolute;
   left: 50%;
   bottom: 0;
@@ -85,16 +87,22 @@ body {
   object-fit: contain;
   object-position: bottom center;
   pointer-events: none;
+  transition: opacity 120ms linear;
 }
 
 #pet.clip #anim {
-  display: block;
+  visibility: visible;
+  opacity: 1;
 }
 
 #pet.clip #body {
   /* 不能 display:none：#pet 一塌成 0 高，气泡就会掉到底部压住片段。
      用 visibility 保留占位，立绘和视频才共用同一条底边。 */
-  visibility: hidden;
+  opacity: 0;
+}
+
+#body {
+  transition: opacity 120ms linear;
 }
 
 #stage.dragging #pet {
