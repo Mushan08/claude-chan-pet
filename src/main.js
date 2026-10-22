@@ -496,6 +496,7 @@ function popupMenu() {
         clipItem('招手', 'wave'),
         clipItem('比心', 'love'),
         clipItem('看书', 'read'),
+        clipItem('想到办法', 'think'),
       ],
     },
     { type: 'separator' },
@@ -574,6 +575,10 @@ async function runSelfTest() {
   setState('success', {});
   await sleep(1200);
   await shot('selftest-clip');
+
+  setState('thinking', {});
+  await sleep(1000);
+  await shot('selftest-think');
 
   app.quit();
 }

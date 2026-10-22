@@ -346,6 +346,7 @@ window.addEventListener('contextmenu', (e) => {
 window.pet.onState(({ state, pose, face, text }) => {
   if (pose && SPRITES[pose]) body.src = SPRITES[pose];
   if (state === 'working') playClip('read', true);
+  else if (state === 'thinking') playClip('think');
   else if (state === 'success') playClip('love');
   else if (state === 'idle') {
     if (activeClip === 'read' || activeClip === 'love') stopClip();

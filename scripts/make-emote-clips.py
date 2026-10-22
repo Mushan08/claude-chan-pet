@@ -34,6 +34,8 @@ CLIPS = [
     ("wave", "b5c7dcc949db45860721a8b9c511fccb.mp4"),
     ("love", "7d631366ba9df8823d393fc3e31915e0.mp4"),
     ("read", "0abd31008ab8bf9b15e408944ea18bdc.mp4"),
+    # 书桌和手臂是连着的，最大连通域会把桌子一起留下；当地「书桌场景」用，不硬拆
+    ("think", "b72a0e8b2f700cee088f908fd7609bc6.mp4"),
 ]
 
 FPS = 24

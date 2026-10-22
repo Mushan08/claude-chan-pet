@@ -35,6 +35,15 @@
       "fps": 24,
       "seconds": 4.04,
       "bytes": 324354
+    },
+    "think": {
+      "file": "anims/think.webm",
+      "w": 421,
+      "h": 320,
+      "frames": 97,
+      "fps": 24,
+      "seconds": 4.04,
+      "bytes": 316327
     }
   },
   "source": "wechat-2026-10"

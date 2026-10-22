@@ -66,3 +66,8 @@ Claude 娘 Electron 透明桌宠，接 Claude Code hooks（事件 -> 表情/气�
   要做只能手绘 mask，暂缓。
 - **注意**：`#anim` 是绝对定位、底边对齐 `#pet`；`#pet.clip #body` 必须用 `visibility:hidden` 而不是 `display:none`，
   否则 `#pet` 塌成 0 高，气泡会掉到底部压住片段。
+
+## 2026-10-22 23:20 第三段素材
+
+- 新增 `think`（书桌 + 举手灵光一闪），绑定 `thinking` 状态，右键「动作 → 想到办法」也可点播。
+- 这段的书桌和手臂连在一起，最大连通域拆不开；按「书桌场景」整体保留，没有硬裁。
