@@ -59,9 +59,15 @@ function displayFor(x, y) {
   return screen.getDisplayNearestPoint({ x: Math.round(x), y: Math.round(y) });
 }
 
+// 按窗口**中心**判定所在屏幕。原来用左上角，而左上角允许伸出工作区 padX，
+// 贴着屏幕左缘时会被算到隔壁那块屏上。
+function workAreaAt(x, y) {
+  const { w, h } = winSize();
+  return displayFor(x + w / 2, y + h / 2).workArea;
+}
+
 function workArea() {
-  const d = displayFor(motion.x, motion.y);
-  return d.workArea;
+  return workAreaAt(motion.x, motion.y);
 }
 
 function groundY() {
@@ -155,11 +161,14 @@ function place(x, y, save = false) {
 }
 
 function clampToArea(x, y) {
-  const a = workArea();
+  // 拖拽时按**目标位置**所在的屏幕夹取，否则永远被夹在当前屏幕里、拖不到别的显示器。
+  // 走动 / 抛掷仍按当前所在屏幕，她不会自己跑到别的屏上。
+  const a = motion.mode === 'drag' ? workAreaAt(x, y) : workArea();
   const { w, h } = winSize();
+  const floor = a.y + a.height - (cfg.window.groundOffsetPx || 0) - h;
   return {
     x: Math.min(Math.max(x, a.x - cfg.window.padX), a.x + a.width - w + cfg.window.padX),
-    y: Math.min(Math.max(y, a.y - cfg.window.padTop), groundY() - h),
+    y: Math.min(Math.max(y, a.y - cfg.window.padTop), floor),
   };
 }
 
